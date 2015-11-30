@@ -2,7 +2,6 @@
 # tasks file for panxatony.logstash
 
 - name: Create a yum repository for Logstash
-  sudo: yes
   template: src=logstash.repo.j2 dest=/etc/yum.repos.d/logstash.repo # owner=root group=root mode=0644
   become: yes
   become_user: root
@@ -10,7 +9,6 @@
     - logstash
 
 - name: Install Logstash
-  sudo: yes
   yum: name=logstash state=present
   become: yes
   become_user: root
@@ -25,7 +23,6 @@
     - logstash
 
 - name: Add IP SNA to openssl.conf
-  sudo: yes
   lineinfile: "dest=/etc/pki/tls/openssl.cnf regexp='^# Extensions for a typical CA' insertafter='^# Extensions for a typical CA' line='subjectAltName = IP:{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}'"
   become: yes
   become_user: root
@@ -33,7 +30,6 @@
     - logstash
 
 - name: Generate SSL Certificate and key pair
-  sudo: yes
   command: openssl req -x509 -batch -nodes -days 3650 -newkey rsa:2048 -keyout private/logstash-forwarder.key -out certs/logstash-forwarder.crt
   args:
     chdir: /etc/pki/tls/
@@ -43,7 +39,6 @@
     - logstash
 
 - name: Create Logstash Input Configuration file
-  sudo: yes
   template: src=01-lumberjack-input.conf.j2 dest=/etc/logstash/conf.d/01-lumberjack-input.conf #owner=root group=root mode=0644
   become: yes
   become_user: root
@@ -51,7 +46,6 @@
     - logstash
 
 - name: Create a configuration file to filter syslog messages
-  sudo: yes
   template: src=10-syslog.conf.j2 dest=/etc/logstash/conf.d/10-syslog.conf #owner=root group=root mode=0644
   become: yes
   become_user: root
@@ -59,7 +53,6 @@
     - logstash
 
 - name: Create a configuration file to filter output
-  sudo: yes
   template: src=30-lumberjack-output.conf.j2 dest=/etc/logstash/conf.d/30-lumberjack-output.conf #owner=root group=root mode=0644 
   notify:
     - restart logstash
